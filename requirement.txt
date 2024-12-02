@@ -1,0 +1,16 @@
+Script needs to call Salesforce Marketing Cloud APIs in a secure manner;
+Credentials or other sensitive data should not be kept within build or repository;
+Script should be schedulable e.g. once per day;
+Script should fetch all updated or new content blocks since last run and copy its content into selected storage i.e. local file storage or cloud-based object storage like Amazon S3 / Google Cloud Storage.
+https://developer.salesforce.com/docs/marketing/marketing-cloud/guide/access-token-s2s.html
+https://developer.salesforce.com/docs/marketing/marketing-cloud/references/mc_rest_assets/assetAdvancedQuery.html
+
+- I need to call an API
+    - credentials
+    - http client
+    - domain model (request and response)
+- storing locally
+- scheduler
+    - run everyday
+    - fetch latest content
+    - overwrite existing data with latest data
