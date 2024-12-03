@@ -1,8 +1,8 @@
-# Salesforce Marketing Cloud Content Fetcher
+## Salesforce Marketing Cloud Content Fetcher
 
 Application fetch content blocks from Salesforce Marketing Cloud (SFMC) and store them in a chosen storage location (currently supporting local or S3 storage) on schedule.
 
-## Features
+### Features
 
 * Securely fetches content blocks from SFMC.
 * Caches access tokens for efficient API calls.
@@ -13,11 +13,47 @@ Application fetch content blocks from Salesforce Marketing Cloud (SFMC) and stor
 * Schedulable execution (e.g., once per day) using cron.
 * Configuration via environment variables.
 
-### Folder Structure
-// TODO
+### Project Structure
+```
+├── cmd -> entry points for application
+│   ├── lambda -> lambda hanlder (empty)
+│   └── cli -> cron job scheduler
+├── internal -> core domain logic and application components
+│   ├── scheduler -> scheduling and orchestration of tasks
+│   ├── config -> application configurations (env variables)
+│   ├── uploader -> adapters for uploading content blocks
+│   ├── fetcher -> adapters for fetching content blocks
+│   └── domain -> core domain logic and interfaces
+└── pkg -> reusable packages 
+```
+This arrangement emphasizes the entry point of the application (`cmd`) and then shows the core domain logic (`internal`) before the supporting packages (`pkg`).
 
 ### Architecture
 This application is using the principles of [hexagonal architecture](https://en.wikipedia.org/wiki/Hexagonal_architecture_(software)) (also known as ports and adapters) in a good extent.
+
+#### Ports (Interfaces)
+The `Uploader` and `Fetcher` interfaces in `internal/domain/ports.go` act as the "ports" in hexagonal architecture.
+
+These interfaces define how the core domain interacts with external concerns (like fetching from Salesforce or storing in S3) without depending on concrete implementations.
+
+#### Adapters (Implementations)
+It has separate packages for different implementations ("adapters") of the `Uploader` and `Fetcher` ports:
+
+* `internal/fetcher/salesforce`: Implements the `Fetcher` interface to fetch content blocks from Salesforce.
+* `internal/uploader/s3`: Implements the `Uploader` interface to store content blocks in an S3 bucket.
+* `internal/uploader/local`: Provides a local implementation of the `Uploader` (although currently unimplemented).
+
+
+The core domain (`internal/domain`) depends on abstractions (interfaces), not on concrete implementations. This allows you to easily switch between different implementations (e.g., using a different cloud storage provider) without modifying the core domain logic.
+
+The `internal/scheduler/scheduler.go` acts as the application logic that orchestrates the interaction between the `Fetcher` and `Uploader` implementations.
+
+#### Benefits of this approach
+
+* **Testability**: We can easily test the core domain logic independently of external dependencies by mocking the `Uploader` and `Fetcher` interfaces.
+* **Maintainability**: The code is more modular and easier to understand and maintain due to the clear separation of concerns.
+* **Flexibility**: We can easily add new features or change implementations without affecting other parts of the application.
+* **Extensibility**: We can easily add support for new data sources or storage backends by implementing the corresponding interfaces.
 
 ### Requirements
 
