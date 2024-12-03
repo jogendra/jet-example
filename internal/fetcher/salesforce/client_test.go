@@ -14,7 +14,7 @@ import (
 	"jet-example/internal/domain"
 )
 
-func TestSalesforceClient_FetchAccessToken(t *testing.T) {
+func TestSalesforceClient_fetchAccessToken(t *testing.T) {
 	tests := []struct {
 		name          string
 		setupCache    func(*cache.Cache)
@@ -82,17 +82,17 @@ func TestSalesforceClient_FetchAccessToken(t *testing.T) {
 				defer server.Close()
 			}
 
-			client := NewSalesforceClient(
-				Config{
+			c := &client{
+				config: Config{
 					AuthURL:      authURL,
 					ClientID:     "some-client-id",
 					ClientSecret: "some-client-secret",
 				},
-				http.DefaultClient,
-				cacheInstance,
-			)
+				httpClient: http.DefaultClient,
+				cache:      cacheInstance,
+			}
 
-			token, err := client.FetchAccessToken(context.Background())
+			token, err := c.fetchAccessToken(context.Background())
 
 			tt.wantErr(t, err)
 			require.Equal(t, tt.expectedToken, token)
@@ -113,7 +113,7 @@ func TestSalesforceClient_FetchContentBlocks(t *testing.T) {
 		{
 			name: "Success - Single Page",
 			mockServerHandler: func(w http.ResponseWriter, r *http.Request) {
-				response := domain.ContentAssetsResponse{
+				response := ContentAssetsResponse{
 					Count:    2,
 					Page:     1,
 					PageSize: 10,
@@ -144,7 +144,7 @@ func TestSalesforceClient_FetchContentBlocks(t *testing.T) {
 				json.NewDecoder(r.Body).Decode(&request)
 				page := request.Page.Page
 				if page == 1 {
-					response := domain.ContentAssetsResponse{
+					response := ContentAssetsResponse{
 						Count:    3,
 						Page:     1,
 						PageSize: 2,
@@ -155,7 +155,7 @@ func TestSalesforceClient_FetchContentBlocks(t *testing.T) {
 					}
 					json.NewEncoder(w).Encode(response)
 				} else if page == 2 {
-					response := domain.ContentAssetsResponse{
+					response := ContentAssetsResponse{
 						Count:    3,
 						Page:     2,
 						PageSize: 2,
@@ -197,7 +197,7 @@ func TestSalesforceClient_FetchContentBlocks(t *testing.T) {
 				json.NewDecoder(r.Body).Decode(&request)
 				page := request.Page.Page
 				if page == 1 {
-					response := domain.ContentAssetsResponse{
+					response := ContentAssetsResponse{
 						Count:    3,
 						Page:     1,
 						PageSize: 2,
